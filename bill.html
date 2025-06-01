@@ -1,4 +1,4 @@
-!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
@@ -47,19 +47,6 @@
 
         <div id="errorMessage" class="mt-4 p-3 bg-red-100 border border-red-300 rounded-lg text-center text-red-700 text-sm hidden">
             Vui lòng nhập một số kWh hợp lệ (không âm).
-        </div>
-
-        <button
-            id="generateTipsBtn"
-            class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-75 transition duration-300 ease-in-out transform hover:scale-105 mt-6"
-        >
-            Gợi ý tiết kiệm điện ✨
-        </button>
-
-        <div id="tipsDisplay" class="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg text-gray-800 hidden">
-            <p id="tipsLoading" class="text-center text-gray-600 italic hidden">Đang tạo gợi ý...</p>
-            <div id="tipsContent">
-                </div>
         </div>
 
         <p class="text-xs text-gray-500 text-center mt-6">
@@ -114,11 +101,7 @@
         const calculateBtn = document.getElementById('calculateBtn');
         const resultDisplay = document.getElementById('resultDisplay');
         const errorMessage = document.getElementById('errorMessage');
-        const generateTipsBtn = document.getElementById('generateTipsBtn'); // New button
-        const tipsDisplay = document.getElementById('tipsDisplay');         // New display div
-        const tipsLoading = document.getElementById('tipsLoading');         // Loading indicator
-        const tipsContent = document.getElementById('tipsContent');         // Content for tips
-
+        
         // Thêm sự kiện click cho nút tính toán
         calculateBtn.addEventListener('click', () => {
             const kwhValue = parseFloat(kwhInput.value);
@@ -128,7 +111,6 @@
                 errorMessage.classList.remove('hidden');
                 resultDisplay.classList.add('hidden');
                 resultDisplay.textContent = ''; // Xóa kết quả cũ
-                tipsDisplay.classList.add('hidden'); // Hide tips section
                 return;
             } else {
                 errorMessage.classList.add('hidden');
@@ -137,74 +119,12 @@
             const bill = calculateElectricityBill(kwhValue);
             resultDisplay.textContent = `Tổng tiền điện: ${bill.toLocaleString('vi-VN')} VNĐ`; // Định dạng số tiền
             resultDisplay.classList.remove('hidden');
-            tipsDisplay.classList.add('hidden'); // Hide tips section when recalculating
-        });
-
-        // Thêm sự kiện click cho nút tạo gợi ý tiết kiệm điện
-        generateTipsBtn.addEventListener('click', async () => {
-            const kwhValue = parseFloat(kwhInput.value);
-
-            // Kiểm tra đầu vào hợp lệ trước khi gọi API
-            if (isNaN(kwhValue) || kwhValue < 0) {
-                errorMessage.classList.remove('hidden');
-                resultDisplay.classList.add('hidden');
-                tipsDisplay.classList.add('hidden');
-                tipsContent.innerHTML = ''; // Clear previous tips
-                return;
-            } else {
-                errorMessage.classList.add('hidden');
-            }
-
-            tipsDisplay.classList.remove('hidden');
-            tipsLoading.classList.remove('hidden'); // Show loading indicator
-            tipsContent.innerHTML = ''; // Clear previous tips
-
-            let prompt;
-            if (kwhValue === 0) {
-                prompt = "Cung cấp 3-5 mẹo tiết kiệm điện cơ bản cho một hộ gia đình không tiêu thụ điện trong tháng này. Trả lời bằng tiếng Việt.";
-            } else {
-                prompt = `Một hộ gia đình đã tiêu thụ ${kwhValue} kWh điện trong tháng này. Hãy cung cấp 3-5 mẹo tiết kiệm điện thực tế và dễ thực hiện để giúp họ giảm mức tiêu thụ. Tập trung vào các thiết bị gia dụng phổ biến và thói quen sinh hoạt. Trả lời bằng tiếng Việt.`;
-            }
-
-            let chatHistory = [];
-            chatHistory.push({ role: "user", parts: [{ text: prompt }] });
-
-            const payload = { contents: chatHistory };
-            const apiKey = ""; // Leave this as-is; Canvas will provide it at runtime.
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
-
-            try {
-                const response = await fetch(apiUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-
-                const result = await response.json();
-
-                if (result.candidates && result.candidates.length > 0 &&
-                    result.candidates[0].content && result.candidates[0].content.parts &&
-                    result.candidates[0].content.parts.length > 0) {
-                    const text = result.candidates[0].content.parts[0].text;
-                    tipsContent.innerHTML = `<h3 class="text-lg font-semibold mb-2">Gợi ý tiết kiệm điện:</h3><p class="whitespace-pre-wrap">${text}</p>`;
-                } else {
-                    tipsContent.innerHTML = `<p class="text-red-600">Không thể tạo gợi ý. Vui lòng thử lại.</p>`;
-                    console.error("Unexpected API response structure:", result);
-                }
-            } catch (error) {
-                tipsContent.innerHTML = `<p class="text-red-600">Đã xảy ra lỗi khi kết nối. Vui lòng kiểm tra kết nối mạng và thử lại.</p>`;
-                console.error("Error fetching tips:", error);
-            } finally {
-                tipsLoading.classList.add('hidden'); // Hide loading indicator
-            }
         });
 
         // Ẩn thông báo lỗi và kết quả khi người dùng nhập lại
         kwhInput.addEventListener('input', () => {
             errorMessage.classList.add('hidden');
             resultDisplay.classList.add('hidden');
-            tipsDisplay.classList.add('hidden'); // Hide tips section
-            tipsContent.innerHTML = ''; // Clear previous tips
         });
     </script>
 </body>
